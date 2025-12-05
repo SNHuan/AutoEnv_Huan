@@ -129,6 +129,30 @@ python run_environment_skin_generation.py
 
 Cost summaries are automatically saved to `workspace/costs/`.
 
+## Benchmarking AutoEnv-36
+
+Evaluate agents on the 36 benchmark environments (scores for all; cost only for LLM branch). See `benchmarks/README.md` for details.
+
+- Built-in SolverAgent + LLMs (cost tracked):
+  ```bash
+  python benchmarks/run.py \
+    --config config/benchmark/bench_llm_example.yaml \
+    --mode test \
+    --max-worlds 5
+  ```
+  `--mode` switches `levels/` vs `val_levels/`; `--max-worlds` limits worlds per env.
+
+- Custom agent (score only): implement `run(env, env_info)`, then
+  ```bash
+  python benchmarks/run.py \
+    --agent your_module:YourAgentAttr \
+    --agent-kwargs '{"foo": 1}' \
+    --mode val
+  ```
+  `--agent` accepts `module:Attr` or `/path/to/file.py:Attr`; Attr can be a class, factory, or pre-built instance.
+
+Programmatic APIs are available in `benchmarks/api.py` (`benchmark_llms`, `benchmark_custom_agent`).
+
 ## Awesome work powered by AutoEnv
 
 - [Reasoning via Video](https://arxiv.org/abs/2511.15065): The First Evaluation of Video Models' Reasoning Abilities through Maze-Solving Tasks

@@ -1,0 +1,17 @@
+# Paths to environments you want to evaluate.
+# Replace with any subset of AutoEnv-36 folders under benchmarks/
+env_folder_paths:
+  - "benchmarks/20_GridNavigation"
+
+# LLM names defined in config/model_config.yaml (or environment variables).
+llms:
+  - "<your_llm_name>"
+
+# Optional controls
+result_folder_path: "workspace/logs/results"
+trajectory_folder_path: "workspace/logs/trajectories"
+world_concurrency: 1
+# Set to 5 to mirror prior quick runs; set null to run all levels.
+max_worlds: 5
+# "test" → levels/, "val" → val_levels/
+world_mode: "test"

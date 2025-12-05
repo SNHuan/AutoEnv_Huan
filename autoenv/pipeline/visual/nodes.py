@@ -270,7 +270,7 @@ class AssemblyNode(AgentNode):
         game_dir = ctx.output_dir / "game"
         game_dir.mkdir(parents=True, exist_ok=True)
 
-        # 复制素材到 game/assets
+        # Copy generated assets into game/assets
         assets_src = ctx.output_dir / "assets"
         assets_dst = game_dir / "assets"
         if assets_src.exists():

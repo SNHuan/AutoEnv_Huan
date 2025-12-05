@@ -1,1 +1,1 @@
-# AutoEnv base package
+# Env subpackage

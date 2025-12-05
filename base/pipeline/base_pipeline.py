@@ -55,7 +55,7 @@ class BasePipeline(BaseModel):
         return ctx
 
     def visualize(self) -> str:
-        """返回 Mermaid 格式 DAG"""
+        """Return Mermaid-format DAG string."""
         lines = ["graph TD"]
         for node in self._collect_nodes():
             if not node.predecessors:
