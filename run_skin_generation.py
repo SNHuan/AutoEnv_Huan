@@ -1,7 +1,7 @@
 """
 Skin Generation Entry Point
 
-Generates visual assets for environments using AutoEnvPipeline.
+Generates visual assets for environments using VisualPipeline.
 
 Two modes:
   1. Instruction mode: Use `requirements` as input prompt
@@ -20,7 +20,7 @@ from pathlib import Path
 
 import yaml
 
-from autoenv.pipeline import AutoEnvPipeline
+from autoenv.pipeline import VisualPipeline
 from base.engine.cost_monitor import CostMonitor
 
 DEFAULT_CONFIG = "config/env_skin_gen.yaml"
@@ -57,7 +57,7 @@ async def run_skin_gen(
     visual_output.mkdir(parents=True, exist_ok=True)
 
     print(f"🎨 [{label}] Generating visuals...")
-    pipeline = AutoEnvPipeline.create_default(
+    pipeline = VisualPipeline.create_default(
         llm_name=model,
         image_model=image_model,
     )

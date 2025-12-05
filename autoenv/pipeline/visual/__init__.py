@@ -12,7 +12,7 @@ from autoenv.pipeline.visual.nodes import (
     BackgroundRemovalNode,
     StrategistNode,
 )
-from autoenv.pipeline.visual.pipeline import AutoEnvPipeline
+from autoenv.pipeline.visual.pipeline import VisualPipeline
 
 __all__ = [
     "AgentNode",
@@ -22,5 +22,5 @@ __all__ = [
     "AutoEnvContext",
     "BackgroundRemovalNode",
     "StrategistNode",
-    "AutoEnvPipeline",
+    "VisualPipeline",
 ]

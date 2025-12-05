@@ -18,7 +18,7 @@ from base.engine.async_llm import AsyncLLM
 from base.pipeline.base_pipeline import BasePipeline
 
 
-class AutoEnvPipeline(BasePipeline):
+class VisualPipeline(BasePipeline):
     """
     Visualization pipeline.
 
@@ -33,7 +33,7 @@ class AutoEnvPipeline(BasePipeline):
         cls,
         image_model: str,
         llm_name: str = "claude-sonnet-4-5",
-    ) -> "AutoEnvPipeline":
+    ) -> "VisualPipeline":
         """
         Factory method: Create default visualization pipeline.
 
@@ -42,7 +42,7 @@ class AutoEnvPipeline(BasePipeline):
             llm_name: LLM name for agents
 
         Usage:
-            pipeline = AutoEnvPipeline.create_default(
+            pipeline = VisualPipeline.create_default(
                 image_model="gemini-2.5-flash-image",
                 llm_name="gemini-2.5-flash"
             )

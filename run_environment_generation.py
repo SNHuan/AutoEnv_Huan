@@ -12,7 +12,7 @@ from pathlib import Path
 
 import yaml
 
-from autoenv.pipeline import AutoEnvPipeline, GeneratorPipeline
+from autoenv.pipeline import VisualPipeline, GeneratorPipeline
 from base.engine.cost_monitor import CostMonitor
 
 DEFAULT_CONFIG = "config/env_gen.yaml"
@@ -32,7 +32,7 @@ def get_themes(themes_folder: str) -> list[str]:
     return sorted(str(f) for f in folder.glob("*.txt"))
 
 
-async def run_one(
+async def run_generation(
     theme: str,
     model: str,
     output: str,
@@ -65,7 +65,7 @@ async def run_one(
 
         print(f"🎨 [{label}] Generating visuals...")
         visual_output = env_path / "visual"
-        visual_pipeline = AutoEnvPipeline.create_default(
+        visual_pipeline = VisualPipeline.create_default(
             llm_name=model,
             image_model=image_model,
         )
@@ -123,7 +123,7 @@ async def main():
 
     async def task(t: str):
         async with sem:
-            await run_one(t, model, output, mode, image_model)
+            await run_generation(t, model, output, mode, image_model)
 
     with CostMonitor() as monitor:
         await asyncio.gather(*[task(t) for t in themes])

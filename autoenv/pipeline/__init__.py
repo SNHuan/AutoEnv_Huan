@@ -3,7 +3,7 @@ AutoEnv Pipeline Module
 Unified pipeline module exports.
 
 Includes:
-- visual: Visualization pipeline (AutoEnvPipeline)
+- visual: Visualization pipeline (VisualPipeline)
 - generator: Environment generation pipeline (GeneratorPipeline)
 """
 
@@ -23,14 +23,14 @@ from autoenv.pipeline.visual import (
     AssemblyNode,
     AssetGeneratorNode,
     AutoEnvContext,
-    AutoEnvPipeline,
+    VisualPipeline,
     BackgroundRemovalNode,
     StrategistNode,
 )
 
 __all__ = [
     # Visual Pipeline
-    "AutoEnvPipeline",
+    "VisualPipeline",
     "AutoEnvContext",
     "AnalyzerNode",
     "StrategistNode",

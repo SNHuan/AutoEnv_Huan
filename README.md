@@ -87,33 +87,12 @@ We also generate multimodal skin based on the rules of the same maze. Generated 
 
 ```
 AutoEnv/
-├── autoenv/
-│   ├── pipeline/
-│   │   ├── generator/      # Environment generation pipeline
-│   │   └── visual/         # Visual/skin generation pipeline
-│   ├── generator.py        # Legacy generator
-│   ├── miniswe_agent.py    # MiniSWE agent wrapper
-│   ├── coder.py            # Code generation bridge
-│   └── prompts/            # Prompt templates
-├── base/
-│   ├── engine/
-│   │   ├── async_llm.py    # Async LLM client with pricing/token tracking
-│   │   ├── cost_monitor.py # Global cost monitoring (contextvars-based)
-│   │   ├── logs.py         # Logging utilities
-│   │   └── trajectory.py   # Trajectory collection
-│   └── pipeline/           # Base pipeline abstractions (DAG execution)
-├── benchmarks/             # AutoEnv-36 benchmark environments
-├── config/
-│   ├── env_gen_example.yaml      # Environment generation config
-│   └── env_skin_gen_example.yaml # Skin generation config
-├── scripts/                # Utility scripts
-├── workspace/
-│   ├── envs/               # Generated environments output
-│   ├── logs/               # Runtime logs
-│   │   └── miniswe/        # MiniSWE agent trajectory logs
-│   └── costs/              # Cost tracking summaries
-├── run_environment_generation.py  # Environment generation entry point
-└── run_skin_generation.py         # Skin generation entry point
+├── autoenv/              # Environment generation logic and pipelines
+├── base/                 # Core abstractions (LLM client, pipeline, env)
+├── benchmarks/           # AutoEnv-36 benchmark environments
+├── config/               # Configuration files
+├── scripts/              # Utility scripts
+└── workspace/            # Runtime outputs (envs, logs, costs)
 ```
 
 ## Quick Start
@@ -140,12 +119,12 @@ cp config/env_gen_example.yaml config/env_gen.yaml
 python run_environment_generation.py
 ```
 
-**Skin Generation** (`run_skin_generation.py`): Generates visual assets for existing environments or from text instructions.
+**Skin Generation** (`run_environment_skin_generation.py`): Generates visual assets for existing environments or from text instructions.
 
 ```bash
 cp config/env_skin_gen_example.yaml config/env_skin_gen.yaml
 # Edit config/env_skin_gen.yaml with your settings
-python run_skin_generation.py
+python run_environment_skin_generation.py
 ```
 
 Cost summaries are automatically saved to `workspace/costs/`.
