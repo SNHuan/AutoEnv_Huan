@@ -1,0 +1,16 @@
+# LLM model for analysis and code generation (default: claude-sonnet-4-5)
+model: "claude-4-5-haiku"
+
+# Image generation model (required)
+image_model: "gemini-2.5-flash-image"
+
+# Mode 1: Existing environment path (analyze and generate visuals)
+# exist_environment_path: "benchmarks/01_Maze"
+
+# Mode 2: Instruction-based generation (text prompt)
+requirements: "A pixel art dungeon crawler game with dark atmosphere"
+
+# Output directory for standalone instruction mode
+envs_root_path: "workspace/envs"
+
+

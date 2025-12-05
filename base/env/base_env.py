@@ -17,7 +17,6 @@ class BaseEnv(ABC):
         self.configs = None
         # Optional: store latest action side-effect/result for UI/agent feedback
         self._last_action_result: Any = None
-        self._dsl_config() 
 
     @abstractmethod
     def _dsl_config(self): 
@@ -98,7 +97,7 @@ class ObsEnv(BaseEnv):
         self.obs_policy = obs_policy
 
     @abstractmethod
-    def observe_semantic(self) -> Dict[str, Any]:
+    def observe_semantic(self):
         """
         Semantic-level observation.
         The observation policy refer to the observation state, such as full, partial, radius. 
@@ -111,7 +110,7 @@ class SkinEnv(ObsEnv):
     """Adds rendering interface: semantic observation -> final input (X)."""
 
     @abstractmethod
-    def render_skin(self, omega: Dict[str, Any]) -> Any:
+    def render_skin(self, omega) -> Any:
         """Render the final input from semantic observation."""
         pass
 
@@ -131,7 +130,7 @@ class SkinEnv(ObsEnv):
         self._t += 1
         raw_obs = self.observe_semantic()
         agent_obs = self.render_skin(raw_obs)
-        if_done = self.done(s_next)
+        if_done = self.done()
         info = {
             "raw_obs": raw_obs,
             "skinned": agent_obs,
