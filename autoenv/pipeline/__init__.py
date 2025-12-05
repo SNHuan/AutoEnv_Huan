@@ -1,24 +1,51 @@
 """
 AutoEnv Pipeline Module
-基于 DAG 的环境生成处理流水线
+Unified pipeline module exports.
+
+Includes:
+- visual: Visualization pipeline (AutoEnvPipeline)
+- generator: Environment generation pipeline (GeneratorPipeline)
 """
 
-from autoenv.pipeline.nodes import (
-    AgentNode,
+from autoenv.pipeline.generator import (
+    CodeFixNode,
+    EnvCodeNode,
+    EnvDescNode,
+    EnvValidatorNode,
+    EnvYamlNode,
+    GeneratorContext,
+    GeneratorPipeline,
+    LevelGenNode,
+    MaxRewardNode,
+)
+from autoenv.pipeline.visual import (
     AnalyzerNode,
-    AssetGeneratorNode,
     AssemblyNode,
+    AssetGeneratorNode,
     AutoEnvContext,
+    AutoEnvPipeline,
+    BackgroundRemovalNode,
     StrategistNode,
 )
-from autoenv.pipeline.pipeline import AutoEnvPipeline
 
 __all__ = [
-    "AgentNode",
-    "AnalyzerNode",
-    "AssetGeneratorNode",
-    "AssemblyNode",
-    "AutoEnvContext",
-    "StrategistNode",
+    # Visual Pipeline
     "AutoEnvPipeline",
+    "AutoEnvContext",
+    "AnalyzerNode",
+    "StrategistNode",
+    "AssetGeneratorNode",
+    "BackgroundRemovalNode",
+    "AssemblyNode",
+    # Generator Pipeline
+    "GeneratorPipeline",
+    "GeneratorContext",
+    "EnvDescNode",
+    "EnvYamlNode",
+    "EnvCodeNode",
+    "EnvValidatorNode",
+    "CodeFixNode",
+    "LevelGenNode",
+    "MaxRewardNode",
 ]
+

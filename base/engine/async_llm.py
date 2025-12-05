@@ -10,6 +10,7 @@ from openai import AsyncOpenAI
 
 from pathlib import Path
 from typing import Dict, Optional, Any
+from base.engine.cost_monitor import record_cost
 from base.engine.logs import logger, LogLevel
 
 class LLMConfig:
@@ -173,8 +174,11 @@ class ModelPricing:
         "z-ai/glm-4.5": {"input": 0.00033, "output": 0.00132},
         "gemini-2.5-pro": {"input": 0.00125, "output": 0.01},
         "claude-4-sonnet": {"input": 0.003, "output": 0.015},
+        "claude-sonnet-4-5": {"input": 0.003, "output": 0.015},
+        "claude-4-5-haiku": {"input": 0.00088, "output": 0.0044},
         "claude-4-sonnet-20250514": {"input": 0.003, "output": 0.015},
         "gemini-2.5-flash": {"input": 0.0003, "output": 0.000252},
+        "gemini-2.5-flash-image": {"input": 0.0003, "output": 0.03},
     }
 
 
@@ -282,50 +286,54 @@ class AsyncLLM:
         # Prefer to use the max_tokens argument passed to the function; if it is None, use the instance variable.
         tokens_to_use = max_tokens if max_tokens is not None else self.max_completion_tokens
 
+        # Claude models via Bedrock don't support both temperature and top_p
+        is_claude = "claude" in self.config.model.lower()
+        sampling_params = (
+            {"temperature": self.config.temperature}
+            if is_claude
+            else {"temperature": self.config.temperature, "top_p": self.config.top_p}
+        )
+
         if tokens_to_use is not None and "o3" in self.config.model:
             response = await self.aclient.chat.completions.create(
                 model=self.config.model,
                 messages=message,
-                temperature=self.config.temperature,
                 max_completion_tokens=tokens_to_use,
-                top_p = self.config.top_p,
+                **sampling_params,
             )
         # Only gpt-series support max_completion_tokens.
         elif tokens_to_use is not None and "o3" not in self.config.model:
             response = await self.aclient.chat.completions.create(
                 model=self.config.model,
                 messages=message,
-                temperature=self.config.temperature,
                 max_tokens=tokens_to_use,
-                top_p = self.config.top_p,
+                **sampling_params,
             )
         else:
             response = await self.aclient.chat.completions.create(
                 model=self.config.model,
                 messages=message,
-                temperature=self.config.temperature,
-                top_p = self.config.top_p,
+                **sampling_params,
             )
 
         # Extract token usage from response
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens
-        
+
         # Track token usage and calculate cost
         usage_record = self.usage_tracker.add_usage(
             self.config.model,
             input_tokens,
             output_tokens
         )
-        
+
+        # Report to global cost monitor if active
+        record_cost(self.config.model, input_tokens, output_tokens, usage_record["total_cost"])
+
         # Return text or multimodal content (API returns content as provided)
         ret = response.choices[0].message.content
         logger.log_to_file(LogLevel.INFO, f"LLM Response: {ret}")
-        
-        # You can optionally print token usage information
-        # print(f"Token usage: {input_tokens} input + {output_tokens} output = {input_tokens + output_tokens} total")
-        # print(f"Cost: ${usage_record['total_cost']:.6f} (${usage_record['input_cost']:.6f} for input, ${usage_record['output_cost']:.6f} for output)")
-        
+
         return ret
     
     def get_usage_summary(self):

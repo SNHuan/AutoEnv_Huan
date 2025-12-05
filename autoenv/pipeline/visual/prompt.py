@@ -1,7 +1,7 @@
 """
 Visualization Pipeline Prompts
-统一管理所有 Pipeline 节点使用的提示词
-使用 .format() 替换占位符
+Unified management of all pipeline node prompts.
+Use .format() to replace placeholders.
 """
 
 # ============== Analysis Prompts ==============
@@ -27,11 +27,11 @@ BENCHMARK_ANALYSIS_PROMPT = """You are a game visualization expert. Analyze the 
 
 1. Read and analyze these files from `{benchmark_path}`:
    - env_desc.txt (environment description)
-   - action_space.txt (action space definition)
+   - action_space.txt (action space definition - CRITICAL for game controls)
    - config.yaml (environment configuration)
-   - env_main_use.py or env_main.py (implementation code)
-   - agent_instruction.txt (task instructions)
-   - levels/*.yaml (sample level - pick any one)
+   - env_main_use.py or env_main.py (implementation code - CRITICAL for game rules)
+   - agent_instruction.txt (task instructions - win/lose conditions)
+   - levels/*.yaml (sample level - pick any one to understand level format)
 
 2. Based on the analysis, create ONLY ONE JSON file at `{output_file}` with this structure:
 
@@ -50,12 +50,39 @@ BENCHMARK_ANALYSIS_PROMPT = """You are a game visualization expert. Analyze the 
     "observation_type": "full/partial/egocentric/noisy"
   }},
 
+  "game_rules": {{
+    "actions": [
+      {{
+        "name": "ActionName",
+        "key_binding": "arrow_up / space / etc",
+        "description": "What this action does",
+        "implementation": "Brief description of transition logic from env_main.py"
+      }}
+    ],
+    "win_condition": "Exact win condition from code",
+    "lose_condition": "Exact lose condition from code (if any)",
+    "special_mechanics": ["list of special game mechanics like pushing boxes, sliding on ice, etc."]
+  }},
+
+  "level_format": {{
+    "file_pattern": "levels/level_*.yaml",
+    "structure": {{
+      "agent": {{"pos": "[row, col]"}},
+      "tiles": {{"grid": "2D array of tile types", "size": "[rows, cols]"}},
+      "objects": {{"description": "object types and their properties"}},
+      "globals": {{"max_steps": "number"}}
+    }},
+    "tile_types": ["list of all tile type strings used in grid"],
+    "object_types": ["list of all object types"]
+  }},
+
   "required_assets": [
     {{
       "name": "asset_name",
       "type": "tile/character/object/ui/overlay",
       "description": "Detailed visual description",
       "purpose": "Purpose in the game",
+      "maps_to": "Which tile_type or object_type this asset represents",
       "priority": 1-5,
       "is_tileable": true/false
     }}
@@ -189,10 +216,7 @@ STRATEGY_PROMPT = """Read `{analysis_file}` and create asset generation strategy
 
 **CRITICAL prompt requirements:**
 - Subject description + art style + view angle
-- "centered filling 70-85% of canvas with even padding"
 - High-contrast solid background (white for dark subjects, black for light subjects)
-- Absolutely NO bloom/glow/halo effects
-- Clean crisp edges for background removal
 
 Write {output_filename} then use COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT.
 """
@@ -207,7 +231,8 @@ CRITICAL: Match the art style, color palette, and rendering technique of the ref
 The new asset MUST look like it comes from the SAME GAME as the reference.
 """
 
-GAME_ASSEMBLY_PROMPT = """You are a game developer. Generate a complete pygame game.
+# Game assembly prompt for instruction-based generation (simple demo game)
+GAME_ASSEMBLY_INSTRUCTION_PROMPT = """You are a game developer. Generate a pygame demo game.
 
 **CRITICAL - COMMAND EXECUTION RULES:**
 - Execute ONE command at a time
@@ -219,16 +244,74 @@ GAME_ASSEMBLY_PROMPT = """You are a game developer. Generate a complete pygame g
 {strategy_json}
 ```
 
-**Available Assets:** {asset_list}
+**Asset Dimensions (actual pixel sizes - MUST scale appropriately):**
+{asset_dimensions}
+
 **Assets Directory:** {game_dir}/assets/
 **Output File:** {game_dir}/game.py
 
 **Requirements:**
 1. Create a complete, runnable pygame game
-2. Load all assets from the assets/ directory
-3. Implement basic game mechanics based on the strategy
+2. Load ALL assets and scale them appropriately based on dimensions above
+3. Implement game mechanics based on the strategy
 4. Include proper game loop, event handling, and rendering
-5. Make the game playable and visually appealing
+5. Make the game playable with keyboard controls
+
+**Scaling Requirements:**
+- Assets are high-resolution and MUST be scaled down for game use
+- Use pygame.transform.scale() to resize assets to appropriate game sizes
+- Maintain aspect ratio when scaling
+
+Write the game code to {game_dir}/game.py, then use COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT.
+"""
+
+# Game assembly prompt for benchmark-based generation (loads real levels)
+GAME_ASSEMBLY_BENCHMARK_PROMPT = """You are a game developer. Generate a pygame game that loads and plays benchmark levels.
+
+**CRITICAL - COMMAND EXECUTION RULES:**
+- Execute ONE command at a time
+- Wait for each command to complete before proceeding
+- Never combine multiple commands in one response
+
+**Strategy (contains game rules, level format, and assets):**
+```json
+{strategy_json}
+```
+
+**Asset Dimensions (actual pixel sizes - MUST scale appropriately):**
+{asset_dimensions}
+
+**Benchmark Path:** {benchmark_path}
+**Assets Directory:** {game_dir}/assets/
+**Output File:** {game_dir}/game.py
+
+**CRITICAL REQUIREMENTS - The game MUST:**
+
+1. **Load levels from YAML files:**
+   - Load levels from `{benchmark_path}/levels/*.yaml`
+   - Parse the exact YAML structure defined in `level_format` from strategy
+   - Support switching levels (e.g., N/P keys for next/previous)
+
+2. **Implement exact game rules from strategy:**
+   - Map keyboard keys to actions as defined in `game_rules.actions`
+   - Implement transition logic exactly as described
+   - Check win/lose conditions as specified
+
+3. **Render the game state:**
+   - Use assets from {game_dir}/assets/
+   - Map tile types and object types to corresponding asset images
+   - Scale assets appropriately for the grid
+
+4. **Show game status:**
+   - Display current level name
+   - Show step count / max steps
+   - Display win/lose messages
+
+**Scaling Requirements:**
+- Assets are high-resolution and MUST be scaled down for game use
+- Use pygame.transform.scale() to resize assets to appropriate game sizes
+- Calculate scale ratio: target_size / actual_size
+- Maintain aspect ratio when scaling
 
 Write the game code to {game_dir}/game.py, then use COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT.
 """
@@ -276,51 +359,3 @@ while running:
 
 pygame.quit()
 '''
-
-# ============== QA Analysis Prompts ==============
-
-QA_ANALYSIS_PROMPT = """You are a game art quality control expert.
-
-**Target Specifications:**
-- Art Style: {art_style}
-- Theme: {theme}
-
-Examine both images and identify visual problems:
-
-1. **Style Inconsistency** (CRITICAL) - Do all assets follow the same art style?
-2. **Contrast Issues** (CRITICAL) - Can player/characters be distinguished?
-3. **Missing/Broken Assets** (CRITICAL) - Any placeholders or glitches?
-4. **Quality Issues** (WARNING) - Resolution/detail appropriate?
-5. **Composition Issues** (INFO) - Overall balance and hierarchy?
-
-Output JSON array of issues:
-```json
-[{{"severity": "critical|warning|info", "category": "...", "description": "...", "suggestion": "..."}}]
-```
-
-If no issues: `[]`
-"""
-
-# ============== Refinement Prompts ==============
-
-REGENERATION_PROMPT = """🔧 **ASSET REGENERATION FOR GAME ENGINE**
-
-**Original Specification:**
-{base_prompt}
-
-**Problem Identified:**
-{instruction}
-
-**Your Task:**
-Create an IMPROVED version that:
-1. Keeps the SAME visual content
-2. Fixes the technical issues
-3. Makes it EASY to process automatically
-
-**CRITICAL Technical Requirements:**
-- SOLID white background (#FFFFFF) - NO gradients
-- Subject centered, filling 70-75% of canvas
-- NO glow/bloom/halo effects
-- Clean, sharp edges
-- Subject isolated and complete
-"""

@@ -8,14 +8,14 @@ from base.pipeline.base_node import BaseNode, NodeContext
 
 
 class BasePipeline(BaseModel):
-    """DAG Pipeline，按层级并行执行，所有节点共享 NodeContext"""
+    """DAG Pipeline. Executes nodes in parallel by level, sharing NodeContext."""
 
     root: BaseNode = Field(...)
 
     model_config = {"arbitrary_types_allowed": True}
 
     def _collect_nodes(self) -> list[BaseNode]:
-        """从根节点 DFS 收集所有节点"""
+        """Collect all nodes from root via DFS."""
         visited: set[str] = set()
         nodes: list[BaseNode] = []
 
@@ -31,7 +31,7 @@ class BasePipeline(BaseModel):
         return nodes
 
     async def run(self, ctx: NodeContext | None = None) -> NodeContext:
-        """按层级并行执行，所有节点共享 ctx"""
+        """Execute nodes in parallel by level. All nodes share ctx."""
         if ctx is None:
             ctx = NodeContext()
 
